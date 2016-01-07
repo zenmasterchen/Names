@@ -120,9 +120,10 @@ def startSession():
 
 
             #INTERIM STORAGE in newEntries: nameIndex, name, rating
-            #NEXTNAMEINDEX will append a nameIndex and name to newEntries
-                #IF BACK, take the previous row and make it the
-                #IF BACK, delete the most recent row
+            #entryIndex points to the current new entry being worked on
+            #NEXTNAMEINDEX will append a nameIndex and name to newEntries and increment entryIndex
+                #IF BACK, then simply decrement entryIndex
+                #AFTER BACK, point entryIndex back to the newest entry
             #SAVE NEW ENTRIES if S -> to status (based on userIndex, nameIndex)        
             
 
