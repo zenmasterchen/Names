@@ -17,7 +17,7 @@
 ## X Boy/girl session
 ## ! Skip completed new names
 ##
-## ! '\n' entry error
+## X '\n' entry error
 ##
 ## - Loop instead of exiting for invalid user/etc.
 ## - Add .upper/.lower support for robust user/session detection
@@ -26,7 +26,7 @@
 ## - ## - Selective names loading
 ##
 ## - No settings found
-## - Complete database scenario
+## - Complete database scenario: all boys or all girls finished
 ## - Incomplete database scenario
 ##
 ## - UX
@@ -49,9 +49,9 @@ import sys
 ##  User-customizable settings/variables are denoted by **
 ##
 
-dataFile = 'data.txt'   #saved settings**
-numLoadNames = 600      #when pulling from 'yob' files (per gender)**
-numNames = 0            #actual (per gender)**
+dataFile = 'data.txt'   #saved settings **
+numLoadNames = 600      #when pulling from 'yob' files (per gender) **
+numNames = 0            #actual (per gender) **
 
 users = []
 names = []
@@ -72,16 +72,16 @@ def selectUser():
     global users; global userIndex;
 
     userIndex = -1;
-    while userIndex < 0:    
-        
+    while userIndex < 0:            
         print('Please select a user: ' + users[0] + ' or ' + users[1] + '?')
-        selectedUser = sys.stdin.readline().split('\n')[0].lower()
-
-        if selectedUser == users[0].lower() or selectedUser[0] == '1':
+        selectedUser = sys.stdin.readline().split('\n')[0]
+        if selectedUser == users[0] or selectedUser == users[0].lower() or \
+           selectedUser == users[0].upper() or selectedUser == '1':
             userIndex = 0
             print('\nHi, ' + users[userIndex] + '!')
             break
-        elif selectedUser == users[1].lower() or selectedUser[0] == '2':
+        elif selectedUser == users[1] or selectedUser == users[1].lower() or \
+             selectedUser == users[1].upper() or selectedUser == '2':
             userIndex = 1        
             print('\nHi, ' + users[userIndex] + '!')
             break
@@ -106,16 +106,16 @@ def startSession():
     
     # Select a session type
     sessionType = -1;
-    while sessionType < 0:    
-        
+    while sessionType < 0:            
         print('Please select a session type: boys or girls?')
-        selectedType = sys.stdin.readline().split('\n')[0].lower()
-
-        if selectedType == 'boys' or selectedType[0] == '1':
+        selectedType = sys.stdin.readline().split('\n')[0]
+        if selectedType == 'Boys' or selectedType == 'boys' or \
+           selectedType == 'BOYS' or selectedType == '1':
             sessionType = 1
             nextName = numNames
             break
-        elif selectedType == 'girls' or selectedType[0] == '2':
+        elif selectedType == 'Girls' or selectedType == 'girls' or \
+             selectedType == 'GIRLS' or selectedType == '2':
             sessionType = 0
             nextName = 0
             break
