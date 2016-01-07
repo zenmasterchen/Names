@@ -15,22 +15,20 @@
 ## X Back action wrap-around
 ##
 ## X Boy/girl session
-## ! Skip completed new names
+## X Skip completed new names
+## ! Complete ratings scenario: all boys or all girls finished
 ##
+## X Loop instead of exiting for invalid user/etc.
+## X Add .upper/.lower support for robust user/session detection
+## X Add '1' or '2' option for user select, etc.
 ## X '\n' entry error
 ##
-## - Loop instead of exiting for invalid user/etc.
-## - Add .upper/.lower support for robust user/session detection
-## - Add '1' or '2' option for user select, etc.
-##
-## - ## - Selective names loading
-##
+## - Selective names loading
 ## - No settings found
-## - Complete database scenario: all boys or all girls finished
-## - Incomplete database scenario
 ##
 ## - UX
 ## - New users
+## - View results (e.g. liked names)
 ##
 ##Settings
 ##order: popularity/random
@@ -91,10 +89,10 @@ def selectUser():
 
 #######################################
 ##
-## Start Session
+## Rating session
 ##
         
-def startSession():
+def session():
 
     global names; global ratings; global userIndex;
 
@@ -131,14 +129,18 @@ def startSession():
         # Add to the list of new entries if needed
         if entryIndex >=  len(newEntries[0]):    
 
-            ###Skip done names [TODO]
-
+            while True:
+                if ratings[userIndex][nextName] != '0':
+                    nextName += 1 ##SAME
+                else:
+                    break
+            
             # Add the nameIndex and rating
             newEntries[0].append(nextName)            
             newEntries[1].append(ratings[userIndex][entryIndex])
         
             # Select the next name
-            nextName += 1
+            nextName += 1 ##SAME
 
             #Take desired order into account [TODO]
 
@@ -260,7 +262,7 @@ loadData()
 selectUser()
 
 # Begin a new session
-startSession()
+session()
 
 # Save user data to file
 saveData()
