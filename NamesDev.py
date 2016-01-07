@@ -16,7 +16,8 @@
 ##
 ## X Boy/girl session
 ## X Skip completed new names
-## ! Complete ratings scenario: all boys or all girls finished
+## X Complete ratings scenario: all boys or all girls finished
+## ! Change 'Session complete!' copy
 ##
 ## X Loop instead of exiting for invalid user/etc.
 ## X Add .upper/.lower support for robust user/session detection
@@ -30,11 +31,12 @@
 ## - New users
 ## - View results (e.g. liked names)
 ##
-##Settings
-##order: popularity/random
-##reset
-##autosave y/n
-##skip completed names y/n 
+## - Settings
+##   N order: popularity/random
+##   - reset
+##   W autosave y/n
+##   N skip completed names y/n
+##
 
 
 import sys
@@ -123,15 +125,24 @@ def session():
     # Show user controls
     print('\n  +: like  -: dislike  *: favorite  b: back  q: quit')
 
-    # Loop until the user chooses to quit
-    while True:
+    # Loop until completion or the user chooses to quit
+    while True:   
         
         # Add to the list of new entries if needed
         if entryIndex >=  len(newEntries[0]):    
 
             while True:
+                
+                # Check for completion
+                if sessionType == 0 and nextName >= numNames or \
+                   sessionType == 1 and nextName >= numNames*2:
+                    print('\nSession complete!')
+                    for index in range(len(newEntries[0])):
+                        ratings[userIndex][newEntries[0][index]] = newEntries[1][index]
+                    saveData()
+                    return
                 if ratings[userIndex][nextName] != '0':
-                    nextName += 1 ##SAME
+                    nextName += 1
                 else:
                     break
             
@@ -140,7 +151,7 @@ def session():
             newEntries[1].append(ratings[userIndex][entryIndex])
         
             # Select the next name
-            nextName += 1 ##SAME
+            nextName += 1
 
             #Take desired order into account [TODO]
 
@@ -158,7 +169,7 @@ def session():
             for index in range(len(newEntries[0])-1):
                 ratings[userIndex][newEntries[0][index]] = newEntries[1][index]
             saveData()
-            break
+            return
 
         # Save data
         elif inChar == 's':                    
