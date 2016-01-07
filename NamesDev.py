@@ -5,14 +5,19 @@
 ## X Rating
 ## X Get names (up to 1000)
 ## X '+/-' copy
-## \ Controls
+## X Controls
 ##   X Quit session
 ##   X Save session
-##   ! Go back
+##   X Go back
 ##   X Skip
 ##   X Favorite
 ##
-## ! Guy/girl session
+## ! Boy/girl session
+## ! Selective names loading
+##
+## ! Skip completed names unless back action
+## W Back action wrap-around (wait for boy/girl sessions)
+##
 ## - UX
 ##
 ## - No settings found
@@ -83,33 +88,45 @@ def startSession():
 
     print('\n  +: like  -: dislike  *: favorite  b: back  q: quit')
 
-
-
-    for index, name in enumerate(names):
-    #nextName() #BOOKMARK BOOKMARK BOOKMARK BOOKMARK
+    nameIndex = 0
+    while True:
         
-        print('\n'+name)
+        print('\n'+names[nameIndex])
         inChar = sys.stdin.readline()[0]
         if inChar == '+':
-            status[userIndex][index] = inChar
+            status[userIndex][nameIndex] = inChar
+            nameIndex += 1
+            nameIndex = nextNameIndex()
         elif inChar == '-':
-            status[userIndex][index] = inChar
+            status[userIndex][nameIndex] = inChar
+            nameIndex += 1
         elif inChar == '*':
-            status[userIndex][index] = inChar
+            status[userIndex][nameIndex] = inChar
+            nameIndex += 1
         elif inChar == '0':
-            status[userIndex][index] = '0'
-        elif inChar == 'q': break
+            status[userIndex][nameIndex] = '0'
+            nameIndex += 1
+            
+        elif inChar == 'q':
+            break
         elif inChar == 's':
             saveData()
-            print('Data saved.')
+            print('\nData saved.')
         elif inChar == 'b':
-            print('Back it up.')
-            #nextName(repeat)
-            #nextName(repeat)
+            nameIndex -= 1
+            #if nameIndex <=0            
         else:
-            print('Invalid input.')
-            #REPEAT
+            print('\nInvalid input.')
+
+
+            #INTERIM STORAGE in newEntries: nameIndex, name, rating
+            #NEXTNAMEINDEX will append a nameIndex and name to newEntries
+                #IF BACK, take the previous row and make it the
+                #IF BACK, delete the most recent row
+            #SAVE NEW ENTRIES if S -> to status (based on userIndex, nameIndex)        
             
+
+          
 
 
 
@@ -118,16 +135,17 @@ def startSession():
 ## 
 ##
         
-def nextName():
+def nextNameIndex():
 
     #global names; global status; global userIndex;
 
     print('\n  +: like  -: dislike  *: favorite  b: back  q: quit')   
 
 
-
-#Skip done names
 #Take desired order into account
+    #Increment for now
+#Skip done names, unless back action
+
 
 
 #######################################
@@ -212,7 +230,7 @@ def saveData():
 
 
 loadData()
-loadNames('2013.txt')
+#loadNames('2013.txt')
 
 selectUser()
 startSession()
