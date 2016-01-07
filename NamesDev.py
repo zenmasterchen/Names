@@ -15,10 +15,12 @@
 ## ! Boy/girl session
 ## ! Selective names loading
 ##
-## ! Skip completed names unless back action
-## W Back action wrap-around (wait for boy/girl sessions)
+## X Back action
+## X Back action wrap-around
 ##
 ## ! COMMENT, BITCH.
+##
+## ! Skip completed new names
 ##
 ## - Loop instead of exiting for invalid user/etc.
 ## - Add .upper/.lower support for robust user/session detection
@@ -97,12 +99,10 @@ def startSession():
 
 
 
-    newEntries = [[],[],[]] #INTERIM STORAGE in newEntries: nameIndex, name, rating
+    newEntries = [[],[]] #INTERIM STORAGE in newEntries: nameIndex, name, rating
     entryIndex = 0; #points to the current new entry being worked on
     nameIndex = -1;
     while True:
-
-
         
         # Add a new name to the list of new entries... if necessary (test for back or not)
         if entryIndex >=  len(newEntries[0]):    
@@ -115,53 +115,58 @@ def startSession():
             #Skip done names
 
             #
-            newEntries[0].append(nameIndex)
-            newEntries[1].append(names[nameIndex])
-            newEntries[2].append(status[userIndex][entryIndex])
+            newEntries[0].append(nameIndex)            
+            newEntries[1].append(status[userIndex][entryIndex])
 
             #Take desired order into account
             #Increment for now
 
 
         
-        print('\n'+newEntries[1][entryIndex])
+        print('\n'+names[newEntries[0][entryIndex]])
         inChar = sys.stdin.readline()[0]
 
 
-        # Valid user
+        # Valid user input
         if inChar == '+' or inChar == '-' or inChar == '*' or inChar == '0':
-            newEntries[2][entryIndex] = inChar    
+            newEntries[1][entryIndex] = inChar    
             entryIndex += 1
-            
+
+        # Quit
         elif inChar == 'q':
-            print newEntries #DEBUG
-            print len(newEntries[0])
+
+            # SA
+            for index in range(len(newEntries[0])-1):
+                status[userIndex][newEntries[0][index]] = newEntries[1][index]
+            saveData()
             break
+
+        # Save
         elif inChar == 's':
-            #saveSession() #do it locally?
+                    
+            for index in range(len(newEntries[0])-1):
+                status[userIndex][newEntries[0][index]] = newEntries[1][index]
             saveData()
             print('\nData saved.')
+
+        # Back
         elif inChar == 'b':             #IF BACK, decrement entryIndex       
             entryIndex -= 1
+
+            # Check for wrap-around
+            if entryIndex < 0:
+                entryIndex = 0
+
+        # Invalid input
         else:
             print('\nInvalid input.')
 
 
             
+#            print newEntries       #DEBUG
+#            print len(newEntries[0])
             
 
-            
-
-
-            
-            #SAVE NEW ENTRIES if S -> to status (based on userIndex, nameIndex)        
-            
-
-def saveSession():
-
-    status[userIndex][nameIndex] = inChar
-
-    return
 
 
 
