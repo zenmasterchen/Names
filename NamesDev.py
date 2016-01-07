@@ -18,8 +18,6 @@
 ## X Back action
 ## X Back action wrap-around
 ##
-## ! COMMENT, BITCH.
-##
 ## ! Skip completed new names
 ##
 ## - Loop instead of exiting for invalid user/etc.
@@ -32,11 +30,13 @@
 ## - Complete database scenario
 ## - Incomplete database scenario
 ##
+## - New users
 ##
 ##Settings
 ##order: popularity/random
 ##reset
-##autsave
+##autosave y/n
+##skip completed names y/n 
 
 
 import sys
@@ -54,7 +54,7 @@ numNames = 600              #per gender**
 
 users = ['Austin', 'Emily']
 names = ['Emma', 'Olivia', 'Sophia', 'Isabella', 'Ava', 'Noah', 'Liam', 'Mason', 'Jacob', 'William']
-status = [['0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],['0', '0', '0', '0', '0', '0', '0', '0', '0', '0']]
+ratings = [['0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],['0', '0', '0', '0', '0', '0', '0', '0', '0', '0']]
 userIndex = -1
 
 
@@ -92,65 +92,59 @@ def selectUser():
         
 def startSession():
 
-    global names; global status; global userIndex;
+    global names; global ratings; global userIndex;
 
+    # Initialize variables    
+    newEntries = [[],[]]    #stores data for this session: nameIndex, rating
+    entryIndex = 0;         #points to the current new entry being worked on
+
+    nextName = 0;           ###for picking upcoming names [TODO]
+
+    # Show user controls
     print('\n  +: like  -: dislike  *: favorite  b: back  q: quit')
 
-
-
-
-    newEntries = [[],[]] #INTERIM STORAGE in newEntries: nameIndex, name, rating
-    entryIndex = 0; #points to the current new entry being worked on
-    nameIndex = -1;
+    # Loop until the user chooses to quit
     while True:
         
-        # Add a new name to the list of new entries... if necessary (test for back or not)
+        # Add to the list of new entries if needed
         if entryIndex >=  len(newEntries[0]):    
 
-            #IF NEXT, append a nameIndex and name to newEntries OR increment entryIndex
-            
-            # Select the next name
-            nameIndex += 1
+            ###Skip done names [TODO]
 
-            #Skip done names
-
-            #
-            newEntries[0].append(nameIndex)            
-            newEntries[1].append(status[userIndex][entryIndex])
-
-            #Take desired order into account
-            #Increment for now
-
-
+            # Add the nameIndex and rating
+            newEntries[0].append(nextName)            
+            newEntries[1].append(ratings[userIndex][entryIndex])
         
+            # Select the next name
+            nextName += 1
+
+            #Take desired order into account [TODO]
+
+        # Display the name to rate and accept input from the user
         print('\n'+names[newEntries[0][entryIndex]])
         inChar = sys.stdin.readline()[0]
 
-
-        # Valid user input
+        # Store valid user ratings and move on
         if inChar == '+' or inChar == '-' or inChar == '*' or inChar == '0':
             newEntries[1][entryIndex] = inChar    
             entryIndex += 1
 
-        # Quit
+        # Quit (but save data first)
         elif inChar == 'q':
-
-            # SA
             for index in range(len(newEntries[0])-1):
-                status[userIndex][newEntries[0][index]] = newEntries[1][index]
+                ratings[userIndex][newEntries[0][index]] = newEntries[1][index]
             saveData()
             break
 
-        # Save
-        elif inChar == 's':
-                    
+        # Save data
+        elif inChar == 's':                    
             for index in range(len(newEntries[0])-1):
-                status[userIndex][newEntries[0][index]] = newEntries[1][index]
+                ratings[userIndex][newEntries[0][index]] = newEntries[1][index]
             saveData()
             print('\nData saved.')
 
         # Back
-        elif inChar == 'b':             #IF BACK, decrement entryIndex       
+        elif inChar == 'b':     
             entryIndex -= 1
 
             # Check for wrap-around
@@ -162,14 +156,6 @@ def startSession():
             print('\nInvalid input.')
 
 
-            
-#            print newEntries       #DEBUG
-#            print len(newEntries[0])
-            
-
-
-
-
 #######################################
 ##
 ##  Load names
@@ -177,24 +163,23 @@ def startSession():
     
 def loadNames(namesFile):
 
-    global names; global status;
+    global names; global ratings;
 
     resetData()    
     with open(namesFile, 'r') as file_:
         for line in file_:
             if ',F,' in line: 
                 names.append(line.split(',')[0])
-                status[0].append('0')
-                status[1].append('0')
+                ratings[0].append('0')
+                ratings[1].append('0')
                 if len(names) >= numNames: break
         
         for line in file_:
             if ',M,' in line: 
                 names.append(line.split(',')[0])
-                status[0].append('0')
-                status[1].append('0')
+                ratings[0].append('0')
+                ratings[1].append('0')
                 if len(names) >= numNames*2: break
-    
 
             
 #######################################
@@ -204,10 +189,10 @@ def loadNames(namesFile):
         
 def resetData():
 
-    global names; global status;
+    global names; global ratings;
 
     names = []
-    status = [[],[]]
+    ratings = [[],[]]
 
 
 #######################################
@@ -217,7 +202,7 @@ def resetData():
     
 def loadData():
 
-    global users; global names; global status; global dataFile;
+    global users; global names; global ratings; global dataFile;
 
     resetData()    
     with open(dataFile, 'r') as file_:
@@ -226,8 +211,8 @@ def loadData():
         for line in file_:
             linesplit = line.split('\n')[0].split(',')
             names.append(linesplit[0])
-            status[0].append(linesplit[1])
-            status[1].append(linesplit[2])
+            ratings[0].append(linesplit[1])
+            ratings[1].append(linesplit[2])
 
             
 #######################################
@@ -237,25 +222,32 @@ def loadData():
             
 def saveData():
 
-    global users; global names; global status; global dataFile;
+    global users; global names; global ratings; global dataFile;
 
     with open(dataFile, 'w') as file_:
         file_.write(users[0]+'\n')
         file_.write(users[1]+'\n')
         for index, name in enumerate(names):
-            file_.write(name+','+status[0][index]+','+status[1][index]+'\n')          
+            file_.write(name+','+ratings[0][index]+','+ratings[1][index]+'\n')          
 
 
 
 
 ####################################  MAIN  ####################################
 
-
+# Load user data from file
 loadData()
-#loadNames('2013.txt')
 
+###loadNames('2013.txt') [TODO]
+
+
+# Select one of two users
 selectUser()
+
+# Begin a new session
 startSession()
+
+# Save user data to file
 saveData()
 
 
