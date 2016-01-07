@@ -14,8 +14,10 @@
 ## X Back action
 ## X Back action wrap-around
 ##
-## ! Boy/girl session
+## X Boy/girl session
 ## ! Skip completed new names
+##
+## ! '\n' entry error
 ##
 ## - Loop instead of exiting for invalid user/etc.
 ## - Add .upper/.lower support for robust user/session detection
@@ -48,12 +50,13 @@ import sys
 ##
 
 dataFile = 'data.txt'   #saved settings**
-numNames = 600              #per gender**
+numLoadNames = 600      #when pulling from 'yob' files (per gender)**
+numNames = 0            #actual (per gender)**
 
-#users = ['Austin', 'Emily']
-#names = ['Emma', 'Olivia', 'Sophia', 'Isabella', 'Ava', 'Noah', 'Liam', 'Mason', 'Jacob', 'William']
-#ratings = [['0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],['0', '0', '0', '0', '0', '0', '0', '0', '0', '0']]
-#userIndex = -1
+users = []
+names = []
+ratings = [[],[]]
+userIndex = -1
 
 
 #################################  FUNCTIONS  ##################################
@@ -83,7 +86,6 @@ def selectUser():
             print('\nHi, ' + users[userIndex] + '!')
             break
         else:
-            pass
             print('\nInvalid user.')                        
 
 
@@ -111,14 +113,13 @@ def startSession():
 
         if selectedType == 'boys' or selectedType[0] == '1':
             sessionType = 1
-            #print('\nBoys rule, girls drool!')
+            nextName = numNames
             break
         elif selectedType == 'girls' or selectedType[0] == '2':
-            sessionType = 0        
-            #print('\nGirl power!')
+            sessionType = 0
+            nextName = 0
             break
-        else:
-            pass
+        else:            
             print('\nInvalid type.')  
 
     # Show user controls
@@ -184,37 +185,24 @@ def startSession():
     
 def loadNames(namesFile):
 
-    global names; global ratings;
-
-    resetData()    
+    global names; global ratings; global numLoadNames
+       
+    names = []
+    ratings = [[],[]]
     with open(namesFile, 'r') as file_:
         for line in file_:
             if ',F,' in line: 
                 names.append(line.split(',')[0])
                 ratings[0].append('0')
                 ratings[1].append('0')
-                if len(names) >= numNames: break
+                if len(names) >= numLoadNames: break
         
         for line in file_:
             if ',M,' in line: 
                 names.append(line.split(',')[0])
                 ratings[0].append('0')
                 ratings[1].append('0')
-                if len(names) >= numNames*2: break
-
-            
-#######################################
-##
-##  Reset data
-##
-        
-def resetData():
-
-    global users; global names; global ratings;
-
-    users = []
-    names = []
-    ratings = [[],[]]
+                if len(names) >= numLoadNames*2: break
 
 
 #######################################
@@ -224,9 +212,12 @@ def resetData():
     
 def loadData():
 
-    global users; global names; global ratings; global dataFile;
+    global users; global names; global ratings; global dataFile; global numNames
 
-    resetData()    
+    users = []
+    names = []
+    ratings = [[],[]]
+    userIndex = -1   
     with open(dataFile, 'r') as file_:
         users.append(file_.readline().split('\n')[0])
         users.append(file_.readline().split('\n')[0])
@@ -235,6 +226,8 @@ def loadData():
             names.append(linesplit[0])
             ratings[0].append(linesplit[1])
             ratings[1].append(linesplit[2])
+
+    numNames = len(ratings[0])/2
 
             
 #######################################
