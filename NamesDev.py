@@ -18,6 +18,12 @@
 ## ! Skip completed names unless back action
 ## W Back action wrap-around (wait for boy/girl sessions)
 ##
+## ! COMMENT, BITCH.
+##
+## - Loop instead of exiting for invalid user/etc.
+## - Add .upper/.lower support for robust user/session detection
+## - Add '1' or '2' option for user select, etc.
+##
 ## - UX
 ##
 ## - No settings found
@@ -88,64 +94,74 @@ def startSession():
 
     print('\n  +: like  -: dislike  *: favorite  b: back  q: quit')
 
-    nameIndex = 0
+
+
+
+    newEntries = [[],[],[]] #INTERIM STORAGE in newEntries: nameIndex, name, rating
+    entryIndex = 0; #points to the current new entry being worked on
+    nameIndex = -1;
     while True:
+
+
         
-        print('\n'+names[nameIndex])
+        # Add a new name to the list of new entries... if necessary (test for back or not)
+        if entryIndex >=  len(newEntries[0]):    
+
+            #IF NEXT, append a nameIndex and name to newEntries OR increment entryIndex
+            
+            # Select the next name
+            nameIndex += 1
+
+            #Skip done names
+
+            #
+            newEntries[0].append(nameIndex)
+            newEntries[1].append(names[nameIndex])
+            newEntries[2].append(status[userIndex][entryIndex])
+
+            #Take desired order into account
+            #Increment for now
+
+
+        
+        print('\n'+newEntries[1][entryIndex])
         inChar = sys.stdin.readline()[0]
-        if inChar == '+':
-            status[userIndex][nameIndex] = inChar
-            nameIndex += 1
-            nameIndex = nextNameIndex()
-        elif inChar == '-':
-            status[userIndex][nameIndex] = inChar
-            nameIndex += 1
-        elif inChar == '*':
-            status[userIndex][nameIndex] = inChar
-            nameIndex += 1
-        elif inChar == '0':
-            status[userIndex][nameIndex] = '0'
-            nameIndex += 1
+
+
+        # Valid user
+        if inChar == '+' or inChar == '-' or inChar == '*' or inChar == '0':
+            newEntries[2][entryIndex] = inChar    
+            entryIndex += 1
             
         elif inChar == 'q':
+            print newEntries #DEBUG
+            print len(newEntries[0])
             break
         elif inChar == 's':
+            #saveSession() #do it locally?
             saveData()
             print('\nData saved.')
-        elif inChar == 'b':
-            nameIndex -= 1
-            #if nameIndex <=0            
+        elif inChar == 'b':             #IF BACK, decrement entryIndex       
+            entryIndex -= 1
         else:
             print('\nInvalid input.')
 
 
-            #INTERIM STORAGE in newEntries: nameIndex, name, rating
-            #entryIndex points to the current new entry being worked on
-            #NEXTNAMEINDEX will append a nameIndex and name to newEntries and increment entryIndex
-                #IF BACK, then simply decrement entryIndex
-                #AFTER BACK, point entryIndex back to the newest entry
+            
+            
+
+            
+
+
+            
             #SAVE NEW ENTRIES if S -> to status (based on userIndex, nameIndex)        
             
 
-          
+def saveSession():
 
+    status[userIndex][nameIndex] = inChar
 
-
-#######################################
-##
-## 
-##
-        
-def nextNameIndex():
-
-    #global names; global status; global userIndex;
-
-    print('\n  +: like  -: dislike  *: favorite  b: back  q: quit')   
-
-
-#Take desired order into account
-    #Increment for now
-#Skip done names, unless back action
+    return
 
 
 
