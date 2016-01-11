@@ -17,23 +17,25 @@
 ## X Boy/girl session
 ## X Skip completed new names
 ## X Complete ratings scenario: all boys or all girls finished
-## ! Change 'Session complete!' copy
+## X Change 'Session complete!' copy
+## N Change order of controls (not needed for eventual GUI)
 ##
 ## X Loop instead of exiting for invalid user/etc.
 ## X Add .upper/.lower support for robust user/session detection
 ## X Add '1' or '2' option for user select, etc.
 ## X '\n' entry error
 ##
-## - Selective names loading
-## - No settings found
 ##
-## - UX
-## - New users
-## - View results (e.g. liked names)
+## ! UX: Plan out functionality and menu hierarchy
+##   ! Main menu: begin session, view results, reset
+##   ! View results (e.g. liked names)
+##   - No settings found upon loading
+##   - Selective names loading: only upon 1st run (wizard)
+##   - New users
+##   - reset all (users, names, ratings)
 ##
-## - Settings
+## W Settings
 ##   N order: popularity/random
-##   - reset
 ##   W autosave y/n
 ##   N skip completed names y/n
 ##
@@ -136,7 +138,10 @@ def session():
                 # Check for completion
                 if sessionType == 0 and nextName >= numNames or \
                    sessionType == 1 and nextName >= numNames*2:
-                    print('\nSession complete!')
+                    if sessionType == 0:
+                        print('\nAll girl names have been completed!')
+                    else:
+                        print('\nAll boy names have been completed!')
                     for index in range(len(newEntries[0])):
                         ratings[userIndex][newEntries[0][index]] = newEntries[1][index]
                     saveData()
@@ -268,6 +273,9 @@ loadData()
 
 ###loadNames('2013.txt') [TODO]
 
+
+#
+#mainMenu()
 
 # Select one of two users
 selectUser()
