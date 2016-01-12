@@ -25,14 +25,21 @@
 ## X Add '1' or '2' option for user select, etc.
 ## X '\n' entry error
 ##
-##
-## \ UX: Plan out functionality and menu hierarchy
+## X UX: Plan out functionality and menu hierarchy
 ##   X Main menu: begin session, view results, reset
 ##   X View results (e.g. liked names)
-##   ! No settings found upon loading
-##   \ Selective names loading: only upon 1st run
-##   \ New users: only upon 1st run
-##   \ reset all (users, names, ratings)
+##   X No settings found upon loading
+##   X Selective names loading: only upon 1st run
+##   X New users: only upon 1st run
+##   X reset all (users, names, ratings)
+##
+## X Bug: girl names only for small numNames
+## X Bug: false completion (numNames = 0)
+## - Bug: blank user names
+## - UI: save, stop/quit in session, save and quit
+##
+## - UI: double spacing for readability
+## - UI: results formatting
 ##
 ## W Settings
 ##   N order: popularity/random
@@ -53,12 +60,12 @@ import sys
 
 dataFile = 'data.txt'   #saved settings **
 numLoadNames = 600      #when pulling from 'yob' files (per gender) **
-numNames = 0            #actual (per gender) **
 
 users = []
 names = []
 ratings = [[],[]]
 userIndex = -1
+numNames = 0            #actual (per gender)
 
 
 #################################  FUNCTIONS  ##################################
@@ -99,7 +106,7 @@ def menu():
         elif inChar.lower() == 'v':                    
             viewResults()
 
-        # Switch user ##TODO
+        # Switch user
         elif inChar.lower() == 'u':
             userIndex = abs(userIndex-1)
             print('\nHi, ' + users[userIndex] + '!')
@@ -107,16 +114,11 @@ def menu():
         
         # Reset data ##TODO
         elif inChar.lower() == 'r':
+            print('\nAre you sure you want to reset? All data will be lost.')
+            resetChar = sys.stdin.readline()[0]
 
-            while True:   
-                print('\nAre you sure you want to reset? All data will be lost.')
-                resetChar = sys.stdin.readline()[0]
-
-                if resetChar.lower() == 'y':            
-                    newData()                    
-                            
-                else:
-                    break
+            if resetChar.lower() == 'y':            
+                newData()                    
 
         # Quit
         elif inChar.lower() == 'q':            
@@ -161,26 +163,23 @@ def selectUser():
         
 def session():
 
-    global names; global ratings; global userIndex;
+    global names; global ratings; global userIndex; global numNames
 
     # Initialize variables    
     newEntries = [[],[]]    #stores data for this session: nameIndex, rating
     entryIndex = 0;         #points to the current new entry being worked on
-
-    nextName = 0;           ###for picking upcoming names [TODO]
+    nextName = 0;           #for picking upcoming names
     
     # Select a session type
     sessionType = -1;
     while sessionType < 0:            
         print('\nPlease select a session type: boys or girls?')
-        selectedType = sys.stdin.readline().split('\n')[0]
-        if selectedType == 'Boys' or selectedType == 'boys' or \
-           selectedType == 'BOYS' or selectedType == '1':
+        inChar = sys.stdin.readline()[0]
+        if inChar.lower() == 'b' or inChar == '1':
             sessionType = 1
             nextName = numNames
             break
-        elif selectedType == 'Girls' or selectedType == 'girls' or \
-             selectedType == 'GIRLS' or selectedType == '2':
+        elif inChar.lower() == 'g' or inChar == '2':
             sessionType = 0
             nextName = 0
             break
@@ -220,8 +219,6 @@ def session():
         
             # Select the next name
             nextName += 1
-
-            #Take desired order into account [TODO]
 
         # Display the name to rate and accept input from the user
         print('\n'+names[newEntries[0][entryIndex]])
@@ -316,17 +313,18 @@ def viewResults():
     
 def newData():
 
-    global users; global names; global ratings; global userIndex; global numNames
+    global users; global names; global ratings; global userIndex
 
     #Reset
     users = []
     names = []
     ratings = [[],[]]
     userIndex = 0
+    numNames = 0
 
                     
     # User information
-    print('\nWelcome! What is your name?')
+    print('\nWelcome! What is your name?')          ###ERROR CHECK FOR BLANK TEXT?
     users.append(sys.stdin.readline().split('\n')[0])
     
     print('\nWhat is your partner\'s name?')
@@ -334,14 +332,19 @@ def newData():
 
     # Load names
     print('\nWhich file has the list of names you\'d like to use?')
-    namesfile = sys.stdin.readline().split('\n')[0]
-    ###loadNames('2013.txt') BOOKMARK BOOKMARK BOOKMARK BOOKMARK
+    namesFile = sys.stdin.readline().split('\n')[0]
+    
+    valid = loadNames(namesFile)
+    while valid == -1:
+        print('\nWe couldn\'t open that. Try including the location with the filename:')
+        namesFile = sys.stdin.readline().split('\n')[0]
+        valid = loadNames(namesFile)
 
-    # try entering
-
-
-    #save data
+    # Save the new data
     saveData()
+
+    # All done
+    print('\nYou\'re all set!')
 
 
 #######################################
@@ -351,24 +354,45 @@ def newData():
     
 def loadNames(namesFile):
 
-    global names; global ratings; global numLoadNames
+    global names; global ratings; global numLoadNames; global numNames
        
     names = []
     ratings = [[],[]]
-    with open(namesFile, 'r') as file_:
+
+    # Parse the file to load the names
+    try:
+        file_ = open(namesFile, 'r')
+    except:
+        return -1
+    else:
         for line in file_:
             if ',F,' in line: 
                 names.append(line.split(',')[0])
-                ratings[0].append('0')
-                ratings[1].append('0')
                 if len(names) >= numLoadNames: break
+        numGirls = len(names)
         
+        file_.seek(0)
         for line in file_:
             if ',M,' in line: 
                 names.append(line.split(',')[0])
-                ratings[0].append('0')
-                ratings[1].append('0')
                 if len(names) >= numLoadNames*2: break
+        file_.close()
+        numBoys = len(names)-numGirls
+
+    # Trim names evenly if necessary
+    if numBoys != numGirls:
+        if numBoys > numGirls:
+            for i in range(numBoys-numGirls):
+                names.pop()
+        else:
+            for i in range(numGirls-numBoys):
+                names.remove(names[numBoys+i])
+
+    # Set the number of names per gender and blank their ratings
+    numNames = len(names)/2
+    for i in range(numNames*2):
+        ratings[0].append('0')
+        ratings[1].append('0')              
 
 
 #######################################
@@ -384,19 +408,23 @@ def loadData():
     names = []
     ratings = [[],[]]
     userIndex = -1
+    
     try:
-        with open(dataFile, 'r') as file_:
-            users.append(file_.readline().split('\n')[0])
-            users.append(file_.readline().split('\n')[0])
-            for line in file_:
-                linesplit = line.split('\n')[0].split(',')
-                names.append(linesplit[0])
-                ratings[0].append(linesplit[1])
-                ratings[1].append(linesplit[2])
-
-        numNames = len(ratings[0])/2
+        file_ = open(dataFile, 'r')
     except:
-        print('FILE ERROR')                 ####BOOKMARK BOOKMARK HOW TO TRY CATCH
+        return -1
+    else:
+        users.append(file_.readline().split('\n')[0])
+        users.append(file_.readline().split('\n')[0])
+        for line in file_:
+            linesplit = line.split('\n')[0].split(',')
+            names.append(linesplit[0])
+            ratings[0].append(linesplit[1])
+            ratings[1].append(linesplit[2])
+        
+        file_.close()
+        numNames = len(ratings[0])/2
+
             
 #######################################
 ##
@@ -407,11 +435,16 @@ def saveData():
 
     global users; global names; global ratings; global dataFile;
 
-    with open(dataFile, 'w') as file_:
+    try:
+        file_ = open(dataFile, 'w')
+    except:
+        return -1
+    else:        
         file_.write(users[0]+'\n')
         file_.write(users[1]+'\n')
         for index, name in enumerate(names):
-            file_.write(name+','+ratings[0][index]+','+ratings[1][index]+'\n')          
+            file_.write(name+','+ratings[0][index]+','+ratings[1][index]+'\n')
+        file_.close()
 
 
 
@@ -419,17 +452,13 @@ def saveData():
 ####################################  MAIN  ####################################
 
 # Load user data from file
-loadData()
+valid = loadData()
 
-###ERROR CATCH AND THROW BACK TO NEW DATA
+# Create new data if none available
+if valid == -1:
+    newData()
+else:
+    selectUser()
 
-
-selectUser()
-
+# Main menu
 menu()
-
-
-
-
-
-
