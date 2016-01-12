@@ -35,11 +35,13 @@
 ##
 ## X Bug: girl names only for small numNames
 ## X Bug: false completion (numNames = 0)
-## - Bug: blank user names
-## - UI: save, stop/quit in session, save and quit
+## N Bug: blank user names
+## X UX: save, stop/quit in session (save and quit)
 ##
-## - UI: double spacing for readability
-## - UI: results formatting
+## X UX: double spacing for readability (selectively)
+## X UX: results formatting
+##
+## - BRUH, this needs a name...
 ##
 ## W Settings
 ##   N order: popularity/random
@@ -90,7 +92,7 @@ def menu():
     while True:   
 
         # Show user controls and accept input from the user
-        print('\n  s: start  v: view results  u: switch user  r: reset  q: quit\n')
+        print('\n\n  s: start  v: view results  u: switch user  r: reset  q: quit\n')
         inChar = sys.stdin.readline()[0]
         
         # Start a rating session
@@ -118,6 +120,7 @@ def menu():
             resetChar = sys.stdin.readline()[0]
 
             if resetChar.lower() == 'y':            
+                print('\n\n')
                 newData()                    
 
         # Quit
@@ -187,7 +190,7 @@ def session():
             print('\nInvalid type.')  
 
     # Show user controls
-    print('\n  +: like  -: dislike  *: favorite  b: back  q: quit')
+    print('\n\n  +: like  -: dislike  *: favorite  b: back  s: save and quit')
 
     # Loop until completion or the user chooses to quit
     while True:   
@@ -236,12 +239,13 @@ def session():
             saveData()
             return
 
-        # Save data
+        # Save data and quit
         elif inChar.lower() == 's':                    
             for index in range(len(newEntries[0])-1):
                 ratings[userIndex][newEntries[0][index]] = newEntries[1][index]
             saveData()
-            print('\nData saved.')
+            #print('\nData saved.')
+            return
 
         # Back
         elif inChar.lower() == 'b':     
@@ -265,45 +269,95 @@ def viewResults():
 
     global users; global names; global ratings;
 
-    both = []
-    fav0 = []
-    fav1 = []
+    both_boys = []
+    both_girls = []
+    fav0_boys = []
+    fav0_girls = []
+    fav1_boys = []
+    fav1_girls = []
+    printString = ''
+    tabLength = 16
 
-    # Find favorites and overlaps
-
-    for index, name in enumerate(names):
+    # Find favorites and overlaps (girls)
+    for index in range(numNames):
 
         # Find favorites
         if ratings[0][index] == '*':
-            fav0.append(name)
+            fav0_girls.append(names[index])
 
         if ratings[1][index] == '*':
-            fav1.append(name)
+            fav1_girls.append(names[index])
 
         # Find overlaps
         if ratings[0][index] == '+' and ratings[1][index] == '+' or \
            ratings[0][index] == '*' and ratings[1][index] == '+' or \
            ratings[0][index] == '+' and ratings[1][index] == '*' or \
            ratings[0][index] == '*' and ratings[1][index] == '*':
-            both.append(name)        
+            both_girls.append(names[index])
 
+    # Find favorites and overlaps (boys)
+    for index in range(numNames, numNames*2):
+
+        # Find favorites
+        if ratings[0][index] == '*':
+            fav0_boys.append(names[index])
+
+        if ratings[1][index] == '*':
+            fav1_boys.append(names[index])
+
+        # Find overlaps
+        if ratings[0][index] == '+' and ratings[1][index] == '+' or \
+           ratings[0][index] == '*' and ratings[1][index] == '+' or \
+           ratings[0][index] == '+' and ratings[1][index] == '*' or \
+           ratings[0][index] == '*' and ratings[1][index] == '*':
+            both_boys.append(names[index])            
+
+    # Pad the results for formatting
+    if len(both_boys) > len(both_girls):
+        for i in range(len(both_boys)-len(both_girls)):
+            both_girls.append('')
+    elif len(both_boys) < len(both_girls):
+        for i in range(len(both_girls)-len(both_boys)):
+            both_boys.append('')
+    if len(fav0_boys) > len(fav0_girls):
+        for i in range(len(fav0_boys)-len(fav0_girls)):
+            fav0_girls.append('')
+    elif len(fav0_boys) < len(fav0_girls):
+        for i in range(len(fav0_girls)-len(fav0_boys)):
+            fav0_boys.append('')
+    if len(fav1_boys) > len(fav1_girls):
+        for i in range(len(fav1_boys)-len(fav1_girls)):
+            fav1_girls.append('')
+    elif len(fav1_boys) < len(fav1_girls):
+        for i in range(len(fav1_girls)-len(fav1_boys)):
+            fav1_boys.append('')
+                
     # Display findings
-    if len(both) >0:
-        print('\nNames liked by both ' + users[0] + ' and ' + users[1] + ':')
-        for index, name in enumerate(both):
-            print(name)
+    if len(both_boys) > 0  or len(both_girls) > 0:
+        printString = 'Names liked by both ' + users[0] + ' and ' + users[1]
+        print('\n\n' + printString)        
+        print('-' * len(printString))
+        for index in range(max(len(both_boys), len(both_girls))):
+            printString = both_boys[index]
+            print(printString + ' ' * (tabLength - len(printString)) + both_girls[index])
     else:
-        print('No names liked by both users yet!')
+        print('\nNo names liked by both users yet!')
     
-    if len(fav0) > 0:
-        print('\nNames favorited by ' + users[0] + ':')
-        for index, name in enumerate(fav0):
-            print(name)
+    if len(fav0_boys) > 0 or len(fav0_girls) > 0:
+        printString = 'Names favorited by ' + users[0]
+        print('\n\n' + printString)
+        print('-' * len(printString))           
+        for index in range(max(len(fav0_boys), len(fav0_girls))):
+            printString = fav0_boys[index]
+            print(printString + ' ' * (tabLength - len(printString)) + fav0_girls[index])
 
-    if len(fav1) > 0:
-        print('\nNames favorited by ' + users[1] + ':')
-        for index, name in enumerate(fav1):
-            print(name)
+    if len(fav1_boys) > 0 or len(fav1_girls) > 0:
+        printString = 'Names favorited by ' + users[1]
+        print('\n\n' + printString)
+        print('-' * len(printString))       
+        for index in range(max(len(fav1_boys), len(fav1_girls))):
+            printString = fav1_boys[index]
+            print(printString + ' ' * (tabLength - len(printString)) + fav1_girls[index])
 
 
 #######################################
@@ -324,7 +378,7 @@ def newData():
 
                     
     # User information
-    print('\nWelcome! What is your name?')          ###ERROR CHECK FOR BLANK TEXT?
+    print('\nWelcome! What is your name?')
     users.append(sys.stdin.readline().split('\n')[0])
     
     print('\nWhat is your partner\'s name?')
