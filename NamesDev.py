@@ -41,12 +41,17 @@
 ## X UX: double spacing for readability (selectively)
 ## X UX: results formatting
 ##
-## - BRUH, this needs a name...
+## X BRUH, this needs a name... Coordiname/Bebenom
+## - Comment (top-level), rename data file to [name].dat (or .log or .cfg)
+## \ Toggle surname
+## ! Stats to results (x out of x names complete, or %, etc.)
+## X ? or h for help (bring up controls again)
 ##
 ## W Settings
 ##   N order: popularity/random
 ##   W autosave y/n
 ##   N skip completed names y/n
+##   W toggle surname (always on or always off)
 ##
 
 
@@ -60,14 +65,17 @@ import sys
 ##  User-customizable settings/variables are denoted by **
 ##
 
-dataFile = 'data.txt'   #saved settings **
+dataFile = 'bebenom.cfg'   #saved settings **
 numLoadNames = 600      #when pulling from 'yob' files (per gender) **
 
-users = []
+users = []              
 names = []
 ratings = [[],[]]
+
 userIndex = -1
 numNames = 0            #actual (per gender)
+lastName = ''           
+lastNameToggle = False  #whether to display
 
 
 #################################  FUNCTIONS  ##################################
@@ -114,7 +122,7 @@ def menu():
             print('\nHi, ' + users[userIndex] + '!')
             pass
         
-        # Reset data ##TODO
+        # Reset data
         elif inChar.lower() == 'r':
             print('\nAre you sure you want to reset? All data will be lost.')
             resetChar = sys.stdin.readline()[0]
@@ -167,6 +175,7 @@ def selectUser():
 def session():
 
     global names; global ratings; global userIndex; global numNames
+    global lastName; global lastNameToggle
 
     # Initialize variables    
     newEntries = [[],[]]    #stores data for this session: nameIndex, rating
@@ -224,7 +233,10 @@ def session():
             nextName += 1
 
         # Display the name to rate and accept input from the user
-        print('\n'+names[newEntries[0][entryIndex]])
+        if lastNameToggle == False:
+            print('\n'+names[newEntries[0][entryIndex]])
+        else:
+            print('\n'+names[newEntries[0][entryIndex]]+' '+lastName)
         inChar = sys.stdin.readline()[0]
 
         # Store valid user ratings and move on
@@ -232,12 +244,16 @@ def session():
             newEntries[1][entryIndex] = inChar    
             entryIndex += 1
 
+        # Toggle whether or not to display the last name
+        elif inChar.lower() == 't':
+            lastNameToggle = not lastNameToggle
+
         # Quit (but save data first)
         elif inChar.lower() == 'q':
             for index in range(len(newEntries[0])-1):
                 ratings[userIndex][newEntries[0][index]] = newEntries[1][index]
             saveData()
-            return
+            break
 
         # Save data and quit
         elif inChar.lower() == 's':                    
@@ -245,7 +261,7 @@ def session():
                 ratings[userIndex][newEntries[0][index]] = newEntries[1][index]
             saveData()
             #print('\nData saved.')
-            return
+            break
 
         # Back
         elif inChar.lower() == 'b':     
@@ -254,6 +270,10 @@ def session():
             # Check for wrap-around
             if entryIndex < 0:
                 entryIndex = 0
+
+        # Help
+        elif inChar.lower() == 'h' or inChar == '?':            
+            print('\n\n  +: like  -: dislike  *: favorite  b: back  s: save and quit')
 
         # Invalid input
         else:
@@ -367,7 +387,7 @@ def viewResults():
     
 def newData():
 
-    global users; global names; global ratings; global userIndex
+    global users; global names; global ratings; global userIndex; global lastName
 
     #Reset
     users = []
@@ -375,7 +395,7 @@ def newData():
     ratings = [[],[]]
     userIndex = 0
     numNames = 0
-
+    lastName = ''
                     
     # User information
     print('\nWelcome! What is your name?')
@@ -383,6 +403,9 @@ def newData():
     
     print('\nWhat is your partner\'s name?')
     users.append(sys.stdin.readline().split('\n')[0])
+
+    print('\nWhat will be the baby\'s last name?')
+    lastName = sys.stdin.readline().split('\n')[0]
 
     # Load names
     print('\nWhich file has the list of names you\'d like to use?')
@@ -456,12 +479,13 @@ def loadNames(namesFile):
     
 def loadData():
 
-    global users; global names; global ratings; global dataFile; global numNames
+    global users; global names; global ratings; global dataFile; global numNames; global lastName
 
     users = []
     names = []
     ratings = [[],[]]
     userIndex = -1
+    lastName = ''
     
     try:
         file_ = open(dataFile, 'r')
@@ -470,6 +494,7 @@ def loadData():
     else:
         users.append(file_.readline().split('\n')[0])
         users.append(file_.readline().split('\n')[0])
+        lastName = file_.readline().split('\n')[0]
         for line in file_:
             linesplit = line.split('\n')[0].split(',')
             names.append(linesplit[0])
@@ -487,7 +512,7 @@ def loadData():
             
 def saveData():
 
-    global users; global names; global ratings; global dataFile;
+    global users; global names; global ratings; global dataFile; global lastName
 
     try:
         file_ = open(dataFile, 'w')
@@ -496,6 +521,7 @@ def saveData():
     else:        
         file_.write(users[0]+'\n')
         file_.write(users[1]+'\n')
+        file_.write(lastName+'\n')
         for index, name in enumerate(names):
             file_.write(name+','+ratings[0][index]+','+ratings[1][index]+'\n')
         file_.close()
