@@ -1,5 +1,21 @@
+################################################################################
+##
+##  Bebenom
+##
+##  This programs allows for the collaborative selection of baby names in a
+##  systematic manner.
+##
+##
+##  Author: Austin Chen
+##  Email: austin@austinandemily.com
+##  Last Revision: 01/13/16
+##
+##
 ## * Code for yourself first! *
 ##
+##
+## TO-DO
+## -----
 ## X Save to settings file
 ## X Read from settings file
 ## X Rating
@@ -42,9 +58,12 @@
 ## X UX: results formatting
 ##
 ## X BRUH, this needs a name... Coordiname/Bebenom
-## - Comment (top-level), rename data file to [name].dat (or .log or .cfg)
-## \ Toggle surname
-## ! Stats to results (x out of x names complete, or %, etc.)
+## X Rename project
+## X Comment (top-level)
+## X rename data file to [name].dat (or .log or .cfg)
+## X Toggle surname
+## N Stats to results (x out of x names complete, or %, etc.)
+## N Double-wide results with users side-by-side (not needed for eventual GUI)
 ## X ? or h for help (bring up controls again)
 ##
 ## W Settings
@@ -55,7 +74,7 @@
 ##
 
 
-import sys
+import sys                  #for basic I/O
 
 
 ################################################################################
@@ -65,17 +84,22 @@ import sys
 ##  User-customizable settings/variables are denoted by **
 ##
 
-dataFile = 'bebenom.cfg'   #saved settings **
-numLoadNames = 600      #when pulling from 'yob' files (per gender) **
+# User-customizable variables
+dataFile = 'bebenom.cfg'    #saved data **
+numLoadNames = 600          #how many names to pull from 'yob' files (per gender) **
 
-users = []              
-names = []
-ratings = [[],[]]
+# Data-related
+users = []                  #user data
+names = []                  #name data
+ratings = [[],[]]           #rating data
 
-userIndex = -1
-numNames = 0            #actual (per gender)
-lastName = ''           
-lastNameToggle = False  #whether to display
+# Miscellaneous
+userIndex = -1              #current user
+numNames = 0                #actual number of names loaded (per gender)
+lastName = ''               #last name
+lastNameToggle = False      #whether or not to display the last name
+
+
 
 
 #################################  FUNCTIONS  ##################################
@@ -84,11 +108,11 @@ lastNameToggle = False  #whether to display
 #######################################
 ##
 ## Main Menu
-##
+## ---------
 ## Start Session
 ## View Results
 ## Switch User
-## Reset All
+## Reset
 ## Quit
 ##
         
@@ -479,7 +503,8 @@ def loadNames(namesFile):
     
 def loadData():
 
-    global users; global names; global ratings; global dataFile; global numNames; global lastName
+    global users; global names; global ratings
+    global dataFile; global numNames; global lastName
 
     users = []
     names = []
