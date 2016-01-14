@@ -85,7 +85,7 @@ import sys                  #for basic I/O
 ##
 
 # User-customizable variables
-dataFile = 'bebenom.cfg'    #saved data **
+dataFile = 'data.bbn'       #saved data **
 numLoadNames = 600          #how many names to pull from 'yob' files (per gender) **
 
 # Data-related
